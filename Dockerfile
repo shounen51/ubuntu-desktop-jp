@@ -1,43 +1,54 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 ENV HOME=/root \
-    DEBIAN_FRONTEND=noninteractive \
-    LANG=ja_JP.UTF-8 \
-    LC_ALL=${LANG} \
-    LANGUAGE=${LANG} \
-    TZ=Asia/Tokyo
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone
+    DEBIAN_FRONTEND=noninteractive 
 
 # Install packages
 RUN apt-get update
+RUN apt-get -yy upgrade
 
+ENV BUILD_DEPS="git autoconf pkg-config libssl-dev libpam0g-dev \
+    libx11-dev libxfixes-dev libxrandr-dev nasm xsltproc flex \
+    bison libxml2-dev dpkg-dev libcap-dev"
+RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 # Install apt-utils
 RUN apt-get install -y apt-utils
 
-# Install japanese language packs(optional)
-RUN apt-get install -y \
-      language-pack-ja-base language-pack-ja \
-      ibus-anthy \
-      fonts-takao \
-      && \
-    echo ja_JP.UTF-8 UTF-8 >> /etc/locale.gen && \
-    dpkg-reconfigure locales
+FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04 
+ARG ADDITIONAL_PACKAGES=""
+ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
+
+ENV DEBIAN_FRONTEND noninteractive
 
 # Install the required packages for desktop
-RUN apt-get install -y \
+RUN apt update && apt -y full-upgrade && apt-get install -y \
       supervisor \
       xvfb \
       xfce4 \
       x11vnc \
-      && \
     # Install utilities(optional).
-    apt-get install -y \
       wget \
       curl \
       net-tools \
-      vim-tiny \
+      xfce4-clipman-plugin \
+      xfce4-cpugraph-plugin \
+      xfce4-netload-plugin \
+      xfce4-screenshooter \
+      xfce4-taskmanager \
       xfce4-terminal \
+      xfce4-xkb-plugin \
+    # Install others
+      firefox \
+      locales \
+      openssh-server \
+      pepperflashplugin-nonfree \
+      pulseaudio \
+      sudo \
+      uuid-runtime \
+      vim \
+      p7zip-full\
+      xauth \
+      xautolock \
       && \
     # Clean up
     apt-get clean && \
@@ -49,9 +60,12 @@ RUN mkdir -p /opt/noVNC/utils/websockify && \
     wget -qO- "https://github.com/novnc/websockify/tarball/master" | tar -zx --strip-components=1 -C /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
 
-# Rename user directories Japanese to English.
-RUN LANG=C xdg-user-dirs-update --force
-
-EXPOSE 8080
+RUN cp -r /etc/ssh /ssh_orig && \
+  rm -rf /etc/ssh/*
+ 
+VOLUME ["/etc/ssh","/home"]
+EXPOSE 8080 22 9001
 COPY supervisord/* /etc/supervisor/conf.d/
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+
+RUN apt update && apt-get install fonts-droid-fallback ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming -y
