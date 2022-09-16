@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ENV HOME=/root \
     DEBIAN_FRONTEND=noninteractive 
@@ -14,7 +14,7 @@ RUN apt-get -yy install  sudo apt-utils software-properties-common $BUILD_DEPS
 # Install apt-utils
 RUN apt-get install -y apt-utils
 
-FROM nvidia/cuda:10.2-cudnn7-devel-ubuntu18.04 
+FROM nvidia/cuda:11.6.1-cudnn8-devel-ubuntu20.04
 ARG ADDITIONAL_PACKAGES=""
 ENV ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES}
 
@@ -34,21 +34,36 @@ RUN apt update && apt -y full-upgrade && apt-get install -y \
       xfce4-cpugraph-plugin \
       xfce4-netload-plugin \
       xfce4-screenshooter \
+      xfce4-screensaver \
+      xfce4-power-manager \
       xfce4-taskmanager \
       xfce4-terminal \
-      xfce4-xkb-plugin \
+      xfce4-xkb-plugin \      
     # Install others
       firefox \
       locales \
       openssh-server \
       pepperflashplugin-nonfree \
       pulseaudio \
-      sudo \
       uuid-runtime \
       vim \
-      p7zip-full\
       xauth \
       xautolock \
+      sudo \
+      git \
+      wget \
+      p7zip-full \
+      htop \
+      curl \
+      python3 \
+      python3-dev \
+      python3-pip \
+      libjpeg-dev \
+      libgl1-mesa-glx \
+      libglib2.0-0 \
+      libsm6 \
+      libxrender-dev \
+      libxext6 \
       && \
     # Clean up
     apt-get clean && \
