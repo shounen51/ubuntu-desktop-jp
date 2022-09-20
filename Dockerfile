@@ -2,7 +2,6 @@ FROM ubuntu:20.04
 
 ENV HOME=/root \
     DEBIAN_FRONTEND=noninteractive 
-
 # Install packages
 RUN apt-get update
 RUN apt-get -yy upgrade
@@ -64,11 +63,19 @@ RUN apt update && apt -y full-upgrade && apt-get install -y \
       libsm6 \
       libxrender-dev \
       libxext6 \
+      '^libxcb.*-dev' \
+      libx11-xcb-dev \
+      libglu1-mesa-dev \
+      libxi-dev \
+      libxkbcommon-dev \
+      libxkbcommon-x11-dev \
       && \
     # Clean up
     apt-get clean && \
     rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
+# for pyqt5 and cv2
+# RUN apt update && apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev -y
 # Install noVNC
 RUN mkdir -p /opt/noVNC/utils/websockify && \
     wget -qO- "http://github.com/novnc/noVNC/tarball/master" | tar -zx --strip-components=1 -C /opt/noVNC && \
@@ -83,4 +90,12 @@ EXPOSE 8080 22 9001
 COPY supervisord/* /etc/supervisor/conf.d/
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 
+# for Chinese
 RUN apt update && apt-get install fonts-droid-fallback ttf-wqy-zenhei ttf-wqy-microhei fonts-arphic-ukai fonts-arphic-uming -y
+
+# python package
+COPY ./requirements.txt ./
+RUN pip3 install --upgrade pip \
+    && pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116 \
+    && pip3 install -r requirements.txt \
+    && pip3 install pyqt5
