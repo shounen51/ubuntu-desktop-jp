@@ -96,6 +96,6 @@ RUN apt update && apt-get install fonts-droid-fallback ttf-wqy-zenhei ttf-wqy-mi
 # python package
 COPY ./requirements.txt ./
 RUN pip3 install --upgrade pip \
-    && pip3 install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu116 \
     && pip3 install -r requirements.txt \
+    && pip3 install torch==1.9.1+cu111 torchvision==0.10.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html \
     && pip3 install pyqt5
